@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
+import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -105,6 +106,21 @@ public class Portfolio extends Configured implements Tool{
 			}
 			count.set(sum);
 			context.write(key, count);
+		}
+		
+		public double getCorrelation(ArrayList<Integer> al1, ArrayList<Integer> al2){
+			double [] company1 = new double[al1.size()];
+			double [] company2 = new double[al2.size()];
+			int counter = 0;
+			for (int i : al1){
+				company1[counter] = i;
+			}
+			counter = 0;
+			for (int i : al2){
+				company2[counter] = i;
+			}
+			double z = new PearsonsCorrelation().correlation(company1, company2);
+			return z;
 		}
 	}
 
