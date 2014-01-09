@@ -119,6 +119,21 @@ public class Portfolio extends Configured implements Tool{
 		}
 		
 		/**
+		 * Dag
+    	 * Calculates the standard deviation from the logarithmic array
+    	 * @return the standard deviation
+    	 */
+        public double standardDev(Iterable<DoubleWritable> ln){
+        	DescriptiveStatistics stats = new DescriptiveStatistics();
+			for(DoubleWritable value : ln) {
+				stats.addValue(value);
+			}
+        			
+			return stats.getStandardDeviation();;
+        	
+        }
+		
+		/**
 		 * 
 		 * @param al1 ArrayList 1 of ln returns of a company.
 		 * @param al2 ArrayList 2 of ln returns of another company.
