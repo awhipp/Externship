@@ -9,6 +9,7 @@ import java.util.Scanner;
 import java.util.StringTokenizer;
 
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -97,8 +98,15 @@ public class Portfolio extends Configured implements Tool{
 		return data;
 	}
 
+	/**
+	 * @author MultiLaptopSystem
+	 *
+	 */
 	public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable> {
 		private IntWritable count = new IntWritable();
+		private static final int position = 1000000;
+        private static final double alpha = new NormalDistribution().inverseCumulativeProbability(0.95);
+        
 		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
 			int sum = 0;
 			for(IntWritable value : values) {
@@ -108,6 +116,14 @@ public class Portfolio extends Configured implements Tool{
 			context.write(key, count);
 		}
 		
+		/**
+		 * 
+		 * @param al1 ArrayList 1 of ln returns of a company.
+		 * @param al2 ArrayList 2 of ln returns of another company.
+		 * Method calculates correlation using PearsonsCorrelation() in Apache Math.
+		 * Arraylists must each be converted to array of doubles to work with PearsonsCorrelation().correlation().
+		 * @return double of correlation between company 1 and 2.
+		 */
 		public double getCorrelation(ArrayList<Integer> al1, ArrayList<Integer> al2){
 			double [] company1 = new double[al1.size()];
 			double [] company2 = new double[al2.size()];
@@ -122,6 +138,16 @@ public class Portfolio extends Configured implements Tool{
 			double z = new PearsonsCorrelation().correlation(company1, company2);
 			return z;
 		}
+        
+        /**
+         * Return the VaR (Value at Risk) using volatility which is the standard deviation of a company.
+         * @alpha remains constant: the "NORMSINV" of a 95% confidence interval.
+         * @position remains constant: the number of shares held.
+         * @return The number of objects contained
+         */
+        public double valueAtRisk(int volatility){
+        	return alpha * position * volatility;
+        }
 	}
 
 	public static void main(String[] args) throws Exception {
