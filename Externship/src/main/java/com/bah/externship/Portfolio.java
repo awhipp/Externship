@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
+import org.apache.commons.math.linear.MatrixUtils;
+import org.apache.commons.math.linear.RealMatrix;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.hadoop.conf.Configuration;
@@ -148,6 +150,37 @@ public class Portfolio extends Configured implements Tool{
         public double valueAtRisk(int volatility){
         	return alpha * position * volatility;
         }
+    	double [][] CorrelationSquare = new double[29][29];
+    	
+    	/**
+    	 * Sami
+    	 * Fills the correlation square when given correlation values used after calling getCorrelation.
+    	 * @param companyKey1
+    	 * @param companyKey2
+    	 * @param correlation
+    	 */
+    	public void fillCorrelationSquare(int companyKey1, int companyKey2, double correlation){
+    		this.CorrelationSquare[companyKey1][companyKey2]=correlation;
+    		this.CorrelationSquare[companyKey2][companyKey1]=correlation;
+    	}
+    	
+    	/**
+    	 * Sami
+    	 * First matrix multiplication of transposed VaRs and correlation square.
+    	 * @param valuesAtRisk
+    	 * @return another real matrix (to be used with varStepTwo.
+    	 */
+    	public RealMatrix varStepOne(ArrayList<Integer>valuesAtRisk){
+    		double [] transposedValuesAtRisk = new double [29];
+    		int counter = 0;
+    		for (int i : valuesAtRisk){
+    			transposedValuesAtRisk[counter] = i;
+    			counter ++;
+    		}
+    		RealMatrix correlationSquareMatrix = MatrixUtils.createRealMatrix(CorrelationSquare);
+    		RealMatrix transposeSquareMatrix = MatrixUtils.createRowRealMatrix(transposedValuesAtRisk);
+    		return transposeSquareMatrix.multiply(correlationSquareMatrix);
+    	}
 	}
 
 	public static void main(String[] args) throws Exception {
